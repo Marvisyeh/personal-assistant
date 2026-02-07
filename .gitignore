@@ -1,0 +1,40 @@
+# 忽略所有檔案
+*
+
+# 開放 git 相關
+!.gitignore
+!.gitattributes
+!.github/
+!.github/*
+
+# 開放 app 目錄下的 Python 檔案
+!app/
+!app/*
+!app/**
+
+# 排除 __pycache__ 目錄
+app/**/__pycache__/
+app/**/__pycache__/*
+
+# 開放主目錄下的 Python 檔案
+!*.py
+
+# 開放 pyproject.toml 檔案
+!pyproject.toml
+
+# 開放 uv.lock 檔案
+!uv.lock
+
+# 開放 Dockerfile 檔案
+!Dockerfile
+
+# 開放 docker-compose.yml 檔案
+!docker-compose.yml
+
+# 開放 .env.example 檔案
+!.env.example
+
+# 開放 README.md 檔案
+!README.md
+
+
