@@ -38,3 +38,9 @@ app/**/__pycache__/*
 !README.md
 
 
+
+temp/
+storage/
+logs/
+tests/
+docs/

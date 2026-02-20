@@ -2,7 +2,7 @@ import os
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
-def setup_logger(name: str, log_file: str = "logs/app.log", level=logging.INFO):
+def setup_logger(name: str, log_file: str = "logs/app.log", level=logging.DEBUG):
     base_dir = os.path.dirname(log_file)
     if not os.path.exists(base_dir):
         os.mkdir(base_dir)

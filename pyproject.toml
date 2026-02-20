@@ -6,9 +6,24 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115.12",
+    "pydantic-settings>=2.0.0",
     "langchain>=0.3.25",
     "langchain-anthropic>=0.3.13",
     "langchain-community>=0.3.24",
     "langchain-openai>=0.3.17",
+    "langgraph>=1.0.0",
     "uvicorn>=0.34.2",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["app/tests"]
+pythonpath = ["app/src"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
