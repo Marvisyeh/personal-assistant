@@ -21,6 +21,17 @@ def _path_for_year(year: int) -> Path:
     return _STORAGE_DIR / f"{year}.json"
 
 
+def _default_investment_plan() -> dict[str, Any]:
+    """Default structure for investment_plan (資產配置、標的、風險、備註)."""
+    return {
+        "monthly_amount": None,
+        "asset_allocation": {},
+        "targets": [],
+        "risk_level": None,
+        "notes": "",
+    }
+
+
 def _default_data(year: int) -> dict[str, Any]:
     return {
         "year": year,
@@ -30,6 +41,7 @@ def _default_data(year: int) -> dict[str, Any]:
         "monthly_expenses": {c: None for c in EXPENSE_CATEGORIES},
         "savings_plans": [],
         "wishlist": [],
+        "investment_plan": _default_investment_plan(),
     }
 
 
@@ -62,6 +74,13 @@ def _load(year: int) -> dict[str, Any]:
         data["wishlist"] = []
     if "yearly_travel_budget" not in data:
         data["yearly_travel_budget"] = None
+    if "investment_plan" not in data:
+        data["investment_plan"] = _default_investment_plan()
+    else:
+        ip = data["investment_plan"]
+        for key in ("monthly_amount", "asset_allocation", "targets", "risk_level", "notes"):
+            if key not in ip:
+                ip[key] = _default_investment_plan().get(key)
     return data
 
 
@@ -356,3 +375,65 @@ def delete_wishlist_item(item_id: str, year: int | None = None) -> str:
             _save(y, data)
             return f"已從清單移除 id {item_id}。"
     return f"找不到 id 為 {item_id} 的項目。"
+
+
+# ---------------------------------------------------------------------------
+# Investment plan (資產配置、標的、風險；與收入配置的「投資金」相依)
+# ---------------------------------------------------------------------------
+
+@tool
+def get_investment_plan(year: int | None = None) -> str:
+    """Get investment plan for a year: asset allocation, targets, risk level, notes. Defaults to current year. 若尚未設定則回傳「尚未設定」."""
+    from datetime import datetime
+    y = year if year is not None else datetime.now().year
+    data = _load(y)
+    ip = data.get("investment_plan") or _default_investment_plan()
+    alloc = ip.get("asset_allocation") or {}
+    targets = ip.get("targets") or []
+    risk = ip.get("risk_level")
+    notes = (ip.get("notes") or "").strip()
+    monthly = ip.get("monthly_amount")
+    if not alloc and not targets and risk is None and not notes and monthly is None:
+        return f"{y} 年尚未設定投資規劃。可先從收入配置確認「投資金」金額，再設定資產配置與標的。"
+    parts = [f"{y} 年投資規劃："]
+    if monthly is not None:
+        parts.append(f"每月投資金額：{monthly} 元")
+    if alloc:
+        parts.append("資產配置：" + "、".join(f"{k} {v}%" for k, v in alloc.items()))
+    if targets:
+        lines = [f"  - {t.get('name', '?')} {t.get('percentage', 0)}%" + (f"（{t.get('note', '')}）" if t.get("note") else "") for t in targets]
+        parts.append("標的：\n" + "\n".join(lines))
+    if risk:
+        parts.append(f"風險屬性：{risk}")
+    if notes:
+        parts.append(f"備註：{notes}")
+    return "\n".join(parts)
+
+
+@tool
+def set_investment_plan(
+    year: int | None = None,
+    monthly_amount: int | None = None,
+    asset_allocation: dict[str, int] | None = None,
+    targets: list[dict[str, Any]] | None = None,
+    risk_level: str | None = None,
+    notes: str | None = None,
+) -> str:
+    """Set or update investment plan for a year. Only provided fields are updated. asset_allocation e.g. {"股票": 60, "債券": 30, "現金": 10}; targets e.g. [{"name": "台股 ETF", "percentage": 40, "note": "0050"}]. Defaults to current year."""
+    from datetime import datetime
+    y = year if year is not None else datetime.now().year
+    data = _load(y)
+    ip = data.get("investment_plan") or _default_investment_plan()
+    if monthly_amount is not None:
+        ip["monthly_amount"] = monthly_amount
+    if asset_allocation is not None:
+        ip["asset_allocation"] = dict(asset_allocation)
+    if targets is not None:
+        ip["targets"] = list(targets)
+    if risk_level is not None:
+        ip["risk_level"] = risk_level
+    if notes is not None:
+        ip["notes"] = notes
+    data["investment_plan"] = ip
+    _save(y, data)
+    return f"{y} 年投資規劃已更新。"

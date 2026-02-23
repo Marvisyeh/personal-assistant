@@ -40,7 +40,7 @@ class Agent:
             checkpointer=checkpointer,
             system_prompt=system_prompt
             if system_prompt is not None
-            else "You are a helpful assistant. Be concise and accurate.",
+            else "You are a helpful assistant. Be concise and accurate. respond in traditional chinese.",
         )
 
     def add_tool(self, tool: Any) -> None:
@@ -84,8 +84,9 @@ class Agent:
 if __name__ == "__main__":
     from core.memory.long_term import InMemoryLongTermMemory
     from core.memory.short_term import get_checkpointer
-    from core.subagents import call_news_agent, call_weather_agent, call_math_agent
-    from core.subagents.goals import call_goals_agent
+    from core.agents import call_news_agent, call_weather_agent, call_math_agent
+    from core.agents.goals import call_goals_agent
+    from core.agents.financial import call_finance_agent
 
     checkpointer = get_checkpointer()
     agent = Agent(
@@ -98,6 +99,7 @@ if __name__ == "__main__":
         [
             long_term_memory.search,
             long_term_memory.add,
+            call_finance_agent,
             call_news_agent,
             call_weather_agent,
             call_math_agent,

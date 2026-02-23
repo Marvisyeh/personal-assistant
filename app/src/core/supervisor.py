@@ -93,9 +93,9 @@ def build_supervisor_graph(
     Returns:
         A compiled LangGraph StateGraph ready to invoke.
     """
-    from core.subagents.math_agent import math_agent
-    from core.subagents.news_agent import create_news_agent
-    from core.subagents.weather_agent import create_weather_agent
+    from core.agents.math_agent import math_agent
+    from core.agents.news.news_agent import create_news_agent
+    from core.agents.weather.agent import create_weather_agent
 
     # ------------------------------------------------------------------
     # 1. Sub-agents: compiled graphs that accept {"messages": ...} (full context)

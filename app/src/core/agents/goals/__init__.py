@@ -4,16 +4,16 @@ from datetime import datetime
 
 from langchain.tools import tool
 
-from core.subagents.goals._router import route_goals_intent
-from core.subagents.goals.strategy_agent import create_strategy_agent
-from core.subagents.goals.planning_agent import create_planning_agent
-from core.subagents.goals.execution_agent import create_execution_agent
-from core.subagents.goals.review_agent import create_review_agent
-from core.tools.goals import set_year_plan
+from core.agents.goals._router import route_goals_intent
+from core.agents.goals.subagents.strategy_agent import create_strategy_agent
+from core.agents.goals.subagents.planning_agent import create_planning_agent
+from core.agents.goals.subagents.execution_agent import create_execution_agent
+from core.agents.goals.subagents.review_agent import create_review_agent
+from core.common.tools.goals import set_year_plan
 
 from utils.logger import setup_logger
 
-logger = setup_logger("src.core.subagents.goals")
+logger = setup_logger("src.core.agents.goals")
 
 
 def _strategy_actually_called_set_year_plan(result: dict) -> bool:
@@ -89,7 +89,13 @@ def _dispatch_goals(query: str, model: str = "anthropic:claude-haiku-4-5-2025100
     if target == "strategy" and not _strategy_actually_called_set_year_plan(result):
         if _looks_like_goals_content(query):
             _strategy_fallback_save(query)
-    return result["messages"][-1].content
+    content = result["messages"][-1].content
+    if isinstance(content, list):
+        content = "\n".join(
+            block.get("text", "") if isinstance(block, dict) else str(block)
+            for block in content
+        ).strip()
+    return content or "無法取得目標規劃結果"
 
 
 @tool(
